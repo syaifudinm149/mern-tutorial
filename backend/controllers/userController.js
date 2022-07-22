@@ -1,11 +1,12 @@
 // jwt
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const asynchandler = require('express-async-handler')
+const asyncHandler = require('express-async-handler')
 const User = require('../models/userModel')
-const { use } = require('../routes/userRoutes')
+// const { use } = require('../routes/userRoutes')
 
-const registerUser = asynchandler(async (req, res) => {
+// register ok
+const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body
   if (!name || !email || !password) {
     res.status(400)
@@ -32,24 +33,69 @@ const registerUser = asynchandler(async (req, res) => {
 
   if (user) {
     res.status(201).json({
-      __id: user.id,
+      _id: user.id,
       name: user.name,
       email: user.email,
+      token: generateToken(user.id),
     })
   } else {
     res.status(400)
     throw Error('invalid user data')
   }
-  res.json({ message: 'Register User' })
+  // res.json({ message: 'Register User' })
 })
 
-const loginUser = asynchandler(async (req, res) => {
-  res.json({ message: 'Login User' })
-})
+// login eror
+// const loginUser = asynchandler(async (req, res) => {
+//   // res.json({ message: req.body })
+//   const { email, password } = req.body
 
-const getMe = asynchandler(async (req, res) => {
+//   // check for user email
+//   const user = await User.findOne({ email })
+
+//   if (user && (await bcrypt.compare(password, user.password))) {
+//     res.json({
+//       _id: user.id,
+//       name: user.name,
+//       email: user.email,
+//       token: generateToken(user.id),
+//     })
+//   } else {
+//     res.status(400)
+//     throw Error('Invalid credentials')
+//   }
+// })
+
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  //check for user email
+  const user = await User.findOne({ email });
+
+  if (user && (await bcrypt.compare(password, user.password))) {
+    res.json({
+      _id: user.id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
+    });
+  } else {
+    res.status(400);
+    throw Error("Invalid credentials");
+  }
+});
+
+
+const getMe = asyncHandler(async (req, res) => {
   res.json({ message: 'User data display' })
 })
+
+// generate JWT
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: "30d"
+  })
+}
 
 module.exports = {
   registerUser,
