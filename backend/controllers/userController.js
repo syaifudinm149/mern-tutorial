@@ -46,7 +46,7 @@ const registerUser = asyncHandler(async (req, res) => {
 })
 
 // login eror
-// const loginUser = asynchandler(async (req, res) => {
+// const loginUser = asyncHandler(async (req, res) => {
 //   // res.json({ message: req.body })
 //   const { email, password } = req.body
 
@@ -67,10 +67,10 @@ const registerUser = asyncHandler(async (req, res) => {
 // })
 
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { name, password } = req.body;
 
   //check for user email
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ name });
 
   if (user && (await bcrypt.compare(password, user.password))) {
     res.json({
@@ -87,8 +87,16 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
 const getMe = asyncHandler(async (req, res) => {
-  res.json({ message: 'User data display' })
+  // res.json({ message: 'User data display' })
+  const { _id, name, email } = await User.findById(req.user.id)
+
+  res.status(200).json({
+    id: _id,
+    name,
+    email,
+  })
 })
+
 
 // generate JWT
 const generateToken = (id) => {
